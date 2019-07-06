@@ -1,0 +1,12 @@
+# visual code studio
+.vscode
+
+# pycache
+__pycache__
+
+# compiled files
+*.pyc
+
+
+# Project folder
+recorder

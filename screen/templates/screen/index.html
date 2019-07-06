@@ -1,0 +1,101 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Screen Capture</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+</head>
+<body>
+
+<div class="container">
+<div class="row mt-5">
+<div class="col-12 mt-3">
+<button id="record">Record</button>
+<button id="stop">Stop</button>
+<button><a id="download"></a></button>
+</div>
+</div>
+<div class="row mt-2">
+<div class="col-12">
+
+<img id="screen_img" class="mt-3 mb-3 card-img-top"  src="{% static 'preview/welcome.png' %}" alt="not found">
+
+</div>
+</div>
+</div>
+
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+
+let buttonRecord = document.getElementById("record");
+let buttonStop = document.getElementById("stop");
+
+buttonStop.disabled = true;
+
+buttonRecord.onclick = function() {
+    // var url = window.location.href + "record_status";
+    buttonRecord.disabled = true;
+    buttonStop.disabled = false;
+
+    // disable download link
+    var downloadLink = document.getElementById("download");
+    downloadLink.text = "";
+    downloadLink.href = "";
+
+    // XMLHttpRequest
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            // alert(xhr.responseText);
+            console.log(document.getElementById("screen_img").src);
+            console.log("post request on process");
+            document.getElementById("screen_img").src = "{% url 'stream_scrn' %}";
+        }
+    };
+    xhr.open("POST", "/start_screen/");
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify({ status: "start" }));
+};
+
+buttonStop.onclick = function() {
+    buttonRecord.disabled = false;
+    buttonStop.disabled = true;
+
+    // XMLHttpRequest
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            // alert(xhr.responseText);
+
+            // enable download link
+            document.getElementById("screen_img").src = "{% url 'end_stream' %}";
+            console.log("got start screen from server")
+            var downloadLink = document.getElementById("download");
+            downloadLink.text = "Download Video";
+            downloadLink.href = "/static/captured/output.avi";
+
+        }
+    };
+    xhr.open("POST", "/stop_screen/");
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+    xhr.send(JSON.stringify({ status: "stop" }));
+};
+
+});
+
+</script>
+
+
+</body>
+</html>
